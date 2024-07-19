@@ -1,0 +1,288 @@
+
+#define DEF_FIELD_16(esc, x) unsigned short x;
+#define DEF_FIELD_32(esc, x) unsigned int x;
+#define DEF_FIELD_64(esc, x) unsigned long x;
+#define DEF_FIELD(esc, size, x) DEF_FIELD_ ##size(esc, x)
+
+#define PRINT_FIELD_16(esc, fld) printf("%s=0x%hx, ",    #fld, ((struct PARAMS_##esc *)$ptr)->fld);
+#define PRINT_FIELD_32(esc, fld) printf("%s=0x%x, ",    #fld, ((struct PARAMS_##esc *)$ptr)->fld);
+#define PRINT_FIELD_64(esc, fld) printf("%s=0x%llx, ", #fld, ((struct PARAMS_##esc *)$ptr)->fld);
+#define PRINT_FIELD(esc, size, fld) PRINT_FIELD_##size(esc, fld)
+
+#define EXPAND(...) __VA_ARGS__
+#define DISCARD(...)
+
+#define NV_ESC_RM_ALLOC_MEMORY(X_ID, X_FIELD) \
+    X_ID(0x27) \
+    X_FIELD(NV_ESC_RM_ALLOC_MEMORY, 32, hRoot) \
+    X_FIELD(NV_ESC_RM_ALLOC_MEMORY, 32, hObjectParent) \
+    X_FIELD(NV_ESC_RM_ALLOC_MEMORY, 32, hObjectNew) \
+    X_FIELD(NV_ESC_RM_ALLOC_MEMORY, 32, hClass) \
+    X_FIELD(NV_ESC_RM_ALLOC_MEMORY, 32, flags) \
+    X_FIELD(NV_ESC_RM_ALLOC_MEMORY, 32, _padding) \
+    X_FIELD(NV_ESC_RM_ALLOC_MEMORY, 64, pMemory) \
+    X_FIELD(NV_ESC_RM_ALLOC_MEMORY, 64, limit) \
+    X_FIELD(NV_ESC_RM_ALLOC_MEMORY, 32, status) \
+
+
+#define NV_ESC_RM_ALLOC_OBJECT(X_ID, X_FIELD) \
+    X_ID(0x28) \
+    X_FIELD(NV_ESC_RM_ALLOC_OBJECT, 32, hRoot) \
+    X_FIELD(NV_ESC_RM_ALLOC_OBJECT, 32, hObjectParent) \
+    X_FIELD(NV_ESC_RM_ALLOC_OBJECT, 32, hObjectNew) \
+    X_FIELD(NV_ESC_RM_ALLOC_OBJECT, 32, hClass) \
+    X_FIELD(NV_ESC_RM_ALLOC_OBJECT, 32, status) \
+
+
+#define NV_ESC_RM_FREE(X_ID, X_FIELD) \
+    X_ID(0x29) \
+    X_FIELD(NV_ESC_RM_FREE, 32, hRoot) \
+    X_FIELD(NV_ESC_RM_FREE, 32, hObjectParent) \
+    X_FIELD(NV_ESC_RM_FREE, 32, hObjectOld) \
+    X_FIELD(NV_ESC_RM_FREE, 32, status) \
+
+
+#define NV_ESC_RM_CONTROL(X_ID, X_FIELD) \
+    X_ID(0x2A) \
+    X_FIELD(NV_ESC_RM_CONTROL, 32, hClient) \
+    X_FIELD(NV_ESC_RM_CONTROL, 32, hObject) \
+    X_FIELD(NV_ESC_RM_CONTROL, 32, cmd) \
+    X_FIELD(NV_ESC_RM_CONTROL, 32, flags) \
+    X_FIELD(NV_ESC_RM_CONTROL, 64, params) \
+    X_FIELD(NV_ESC_RM_CONTROL, 32, paramsSize) \
+    X_FIELD(NV_ESC_RM_CONTROL, 32, status) \
+
+
+#define NV_ESC_RM_ALLOC(X_ID, X_FIELD) \
+    X_ID(0x2B) \
+    X_FIELD(NV_ESC_RM_ALLOC, 32, hRoot) \
+    X_FIELD(NV_ESC_RM_ALLOC, 32, hObjectParent) \
+    X_FIELD(NV_ESC_RM_ALLOC, 32, hObjectNew) \
+    X_FIELD(NV_ESC_RM_ALLOC, 32, hClass) \
+    X_FIELD(NV_ESC_RM_ALLOC, 64, pAllocParms) \
+    X_FIELD(NV_ESC_RM_ALLOC, 32, status) \
+
+#define NV_ESC_RM_DUP_OBJECT(X_ID, X_FIELD) \
+    X_ID(0x34) \
+    X_FIELD(NV_ESC_RM_DUP_OBJECT, 32, hClient) \
+    X_FIELD(NV_ESC_RM_DUP_OBJECT, 32, hParent) \
+    X_FIELD(NV_ESC_RM_DUP_OBJECT, 32, hObject) \
+    X_FIELD(NV_ESC_RM_DUP_OBJECT, 32, hClientSrc) \
+    X_FIELD(NV_ESC_RM_DUP_OBJECT, 32, hObjectSrc) \
+    X_FIELD(NV_ESC_RM_DUP_OBJECT, 32, flags) \
+    X_FIELD(NV_ESC_RM_DUP_OBJECT, 32, status) \
+
+
+#define NV_ESC_RM_SHARE(X_ID, X_FIELD) \
+    X_ID(0x35) \
+    X_FIELD(NV_ESC_RM_SHARE, 32, hClient) \
+    X_FIELD(NV_ESC_RM_SHARE, 32, hObject) \
+    /*RS_SHARE_POLICY    sharePolicy;*/ \
+    /*X_FIELD(NV_ESC_RM_SHARE, 32, status) */ \
+
+
+#define NV_ESC_RM_I2C_ACCESS(X_ID, X_FIELD) \
+    X_ID(0x39) \
+    X_FIELD(NV_ESC_RM_I2C_ACCESS, 32, hClient) \
+    X_FIELD(NV_ESC_RM_I2C_ACCESS, 32, hDevice) \
+    X_FIELD(NV_ESC_RM_I2C_ACCESS, 32, paramSize) \
+    X_FIELD(NV_ESC_RM_I2C_ACCESS, 32, _padding) \
+    X_FIELD(NV_ESC_RM_I2C_ACCESS, 64, paramStructPtr) \
+    X_FIELD(NV_ESC_RM_I2C_ACCESS, 32, status) \
+
+
+
+#define NV_ESC_RM_IDLE_CHANNELS(X_ID, X_FIELD) \
+    X_ID(0x41) \
+    X_FIELD(NV_ESC_RM_IDLE_CHANNELS, 32, hClient) \
+    X_FIELD(NV_ESC_RM_IDLE_CHANNELS, 32, hDevice) \
+    X_FIELD(NV_ESC_RM_IDLE_CHANNELS, 32, hChannel) \
+    X_FIELD(NV_ESC_RM_IDLE_CHANNELS, 32, numChannels) \
+    X_FIELD(NV_ESC_RM_IDLE_CHANNELS, 64, phClients) \
+    X_FIELD(NV_ESC_RM_IDLE_CHANNELS, 64, phDevices) \
+    X_FIELD(NV_ESC_RM_IDLE_CHANNELS, 64, phChannels) \
+    X_FIELD(NV_ESC_RM_IDLE_CHANNELS, 32, flags) \
+    X_FIELD(NV_ESC_RM_IDLE_CHANNELS, 32, timeout) \
+    X_FIELD(NV_ESC_RM_IDLE_CHANNELS, 32, status) \
+
+
+#define NV_ESC_RM_VID_HEAP_CONTROL(X_ID, X_FIELD) \
+    X_ID(0x4A) \
+    X_FIELD(NV_ESC_RM_VID_HEAP_CONTROL, 32, hRoot) \
+    X_FIELD(NV_ESC_RM_VID_HEAP_CONTROL, 32, hObjectParent) \
+    X_FIELD(NV_ESC_RM_VID_HEAP_CONTROL, 32, function) \
+    X_FIELD(NV_ESC_RM_VID_HEAP_CONTROL, 32, hVASpace) \
+    X_FIELD(NV_ESC_RM_VID_HEAP_CONTROL, 16, ivcHeapNumber) \
+    X_FIELD(NV_ESC_RM_VID_HEAP_CONTROL, 32, status) \
+    X_FIELD(NV_ESC_RM_VID_HEAP_CONTROL, 64, total) \
+    X_FIELD(NV_ESC_RM_VID_HEAP_CONTROL, 64, free) \
+    X_FIELD(NV_ESC_RM_VID_HEAP_CONTROL, 32, data0) \
+    X_FIELD(NV_ESC_RM_VID_HEAP_CONTROL, 32, data1) \
+    X_FIELD(NV_ESC_RM_VID_HEAP_CONTROL, 32, data2) \
+    X_FIELD(NV_ESC_RM_VID_HEAP_CONTROL, 32, data3) \
+    // ..etc...
+
+
+#define NV_ESC_RM_ACCESS_REGISTRY(X_ID, X_FIELD) \
+    X_ID(0x4D) \
+    X_FIELD(NV_ESC_RM_ACCESS_REGISTRY, 32, hClient) \
+    X_FIELD(NV_ESC_RM_ACCESS_REGISTRY, 32, hObject) \
+    X_FIELD(NV_ESC_RM_ACCESS_REGISTRY, 32, AccessType) \
+    X_FIELD(NV_ESC_RM_ACCESS_REGISTRY, 32, DevNodeLength) \
+    X_FIELD(NV_ESC_RM_ACCESS_REGISTRY, 64, pDevNode) \
+    X_FIELD(NV_ESC_RM_ACCESS_REGISTRY, 32, ParmStrLength) \
+    X_FIELD(NV_ESC_RM_ACCESS_REGISTRY, 32, _padding0) \
+    X_FIELD(NV_ESC_RM_ACCESS_REGISTRY, 64, pParmStr) \
+    X_FIELD(NV_ESC_RM_ACCESS_REGISTRY, 32, BinaryDataLength) \
+    X_FIELD(NV_ESC_RM_ACCESS_REGISTRY, 32, _padding1) \
+    X_FIELD(NV_ESC_RM_ACCESS_REGISTRY, 64, pBinaryData) \
+    X_FIELD(NV_ESC_RM_ACCESS_REGISTRY, 32, Data) \
+    X_FIELD(NV_ESC_RM_ACCESS_REGISTRY, 32, Entry) \
+    X_FIELD(NV_ESC_RM_ACCESS_REGISTRY, 32, status) \
+
+
+#define NV_ESC_RM_MAP_MEMORY(X_ID, X_FIELD) \
+    X_ID(0x4E) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY, 32, hClient) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY, 32, hDevice) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY, 32, hMemory) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY, 32, _padding) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY, 64, offset) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY, 64, length) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY, 64, pLinearAddress) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY, 32, status) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY, 32, flags) \
+
+
+
+#define NV_ESC_RM_UNMAP_MEMORY(X_ID, X_FIELD) \
+    X_ID(0x4F) \
+    X_FIELD(NV_ESC_RM_UNMAP_MEMORY, 32, hClient) \
+    X_FIELD(NV_ESC_RM_UNMAP_MEMORY, 32, hDevice) \
+    X_FIELD(NV_ESC_RM_UNMAP_MEMORY, 32, hMemory) \
+    X_FIELD(NV_ESC_RM_UNMAP_MEMORY, 32, _padding) \
+    X_FIELD(NV_ESC_RM_UNMAP_MEMORY, 64, pLinearAddress) \
+    X_FIELD(NV_ESC_RM_UNMAP_MEMORY, 32, status) \
+    X_FIELD(NV_ESC_RM_UNMAP_MEMORY, 32, flags) \
+
+
+#define NV_ESC_RM_GET_EVENT_DATA(X_ID, X_FIELD) \
+    X_ID(0x52) \
+    X_FIELD(NV_ESC_RM_GET_EVENT_DATA, 64, pEvent) \
+    X_FIELD(NV_ESC_RM_GET_EVENT_DATA, 32, MoreEvents) \
+    X_FIELD(NV_ESC_RM_GET_EVENT_DATA, 32, status) \
+
+
+#define NV_ESC_RM_ALLOC_CONTEXT_DMA2(X_ID, X_FIELD) \
+    X_ID(0x54) \
+    X_FIELD(NV_ESC_RM_ALLOC_CONTEXT_DMA2, 32, hObjectParent) \
+    X_FIELD(NV_ESC_RM_ALLOC_CONTEXT_DMA2, 32, hSubDevice) \
+    X_FIELD(NV_ESC_RM_ALLOC_CONTEXT_DMA2, 32, hObjectNew) \
+    X_FIELD(NV_ESC_RM_ALLOC_CONTEXT_DMA2, 32, hClass) \
+    X_FIELD(NV_ESC_RM_ALLOC_CONTEXT_DMA2, 32, flags) \
+    X_FIELD(NV_ESC_RM_ALLOC_CONTEXT_DMA2, 32, selector) \
+    X_FIELD(NV_ESC_RM_ALLOC_CONTEXT_DMA2, 32, hMemory) \
+    X_FIELD(NV_ESC_RM_ALLOC_CONTEXT_DMA2, 32, _padding) \
+    X_FIELD(NV_ESC_RM_ALLOC_CONTEXT_DMA2, 64, offset) \
+    X_FIELD(NV_ESC_RM_ALLOC_CONTEXT_DMA2, 64, limit) \
+    X_FIELD(NV_ESC_RM_ALLOC_CONTEXT_DMA2, 32, status) \
+
+
+#define NV_ESC_RM_MAP_MEMORY_DMA(X_ID, X_FIELD) \
+    X_ID(0x57) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY_DMA, 32, hClient) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY_DMA, 32, hDevice) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY_DMA, 32, hDma) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY_DMA, 32, hMemory) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY_DMA, 64, offset) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY_DMA, 64, length) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY_DMA, 32, flags) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY_DMA, 32, _padding) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY_DMA, 64, dmaOffset) \
+    X_FIELD(NV_ESC_RM_MAP_MEMORY_DMA, 32, status) \
+
+
+#define NV_ESC_RM_UNMAP_MEMORY_DMA(X_ID, X_FIELD) \
+    X_ID(0x58) \
+    X_FIELD(NV_ESC_RM_UNMAP_MEMORY_DMA, 32, hClient) \
+    X_FIELD(NV_ESC_RM_UNMAP_MEMORY_DMA, 32, hDevice) \
+    X_FIELD(NV_ESC_RM_UNMAP_MEMORY_DMA, 32, hDma) \
+    X_FIELD(NV_ESC_RM_UNMAP_MEMORY_DMA, 32, hMemory) \
+    X_FIELD(NV_ESC_RM_UNMAP_MEMORY_DMA, 32, flags) \
+    X_FIELD(NV_ESC_RM_UNMAP_MEMORY_DMA, 32, _padding) \
+    X_FIELD(NV_ESC_RM_UNMAP_MEMORY_DMA, 64, dmaOffset) \
+    X_FIELD(NV_ESC_RM_UNMAP_MEMORY_DMA, 32, status) \
+
+
+#define NV_ESC_RM_BIND_CONTEXT_DMA(X_ID, X_FIELD) \
+    X_ID(0x59) \
+    X_FIELD(NV_ESC_RM_BIND_CONTEXT_DMA, 32, hClient) \
+    X_FIELD(NV_ESC_RM_BIND_CONTEXT_DMA, 32, hChannel) \
+    X_FIELD(NV_ESC_RM_BIND_CONTEXT_DMA, 32, hCtxDma) \
+    X_FIELD(NV_ESC_RM_BIND_CONTEXT_DMA, 32, status) \
+
+#define NV_ESC_RM_ADD_VBLANK_CALLBACK(X_ID, X_FIELD)        X_ID(0x56)
+#define NV_ESC_RM_EXPORT_OBJECT_TO_FD(X_ID, X_FIELD)        X_ID(0x5C)
+#define NV_ESC_RM_IMPORT_OBJECT_FROM_FD(X_ID, X_FIELD)      X_ID(0x5D)
+#define NV_ESC_RM_UPDATE_DEVICE_MAPPING_INFO(X_ID, X_FIELD) X_ID(0x5E)
+#define NV_ESC_RM_LOCKLESS_DIAGNOSTIC(X_ID, X_FIELD)        X_ID(0x5F)
+#define NV_ESC_CARD_INFO(X_ID, X_FIELD)                     X_ID(0xC8)
+#define NV_ESC_REGISTER_FD(X_ID, X_FIELD)                   X_ID(0xC9)
+#define NV_ESC_ALLOC_OS_EVENT(X_ID, X_FIELD)                X_ID(0xCE)
+#define NV_ESC_FREE_OS_EVENT(X_ID, X_FIELD)                 X_ID(0xCF)
+#define NV_ESC_STATUS_CODE(X_ID, X_FIELD)                   X_ID(0xD1)
+#define NV_ESC_CHECK_VERSION_STR(X_ID, X_FIELD)             X_ID(0xD2)
+#define NV_ESC_IOCTL_XFER_CMD(X_ID, X_FIELD)                X_ID(0xD3)
+#define NV_ESC_ATTACH_GPUS_TO_FD(X_ID, X_FIELD)             X_ID(0xD4)
+#define NV_ESC_QUERY_DEVICE_INTR(X_ID, X_FIELD)             X_ID(0xD5)
+#define NV_ESC_SYS_PARAMS(X_ID, X_FIELD)                    X_ID(0xD6)
+#define NV_ESC_NUMA_INFO(X_ID, X_FIELD)                     X_ID(0xD7)
+#define NV_ESC_SET_NUMA_STATUS(X_ID, X_FIELD)               X_ID(0xD8)
+#define NV_ESC_EXPORT_TO_DMABUF_FD(X_ID, X_FIELD)           X_ID(0xD9)
+
+#define FOR_EACH_IOCTL(X) \
+    X(NV_ESC_RM_ALLOC_MEMORY) \
+    X(NV_ESC_RM_ALLOC_OBJECT) \
+    X(NV_ESC_RM_FREE) \
+    X(NV_ESC_RM_CONTROL) \
+    X(NV_ESC_RM_ALLOC) \
+    X(NV_ESC_RM_DUP_OBJECT) \
+    X(NV_ESC_RM_SHARE) \
+    X(NV_ESC_RM_I2C_ACCESS) \
+    X(NV_ESC_RM_IDLE_CHANNELS) \
+    X(NV_ESC_RM_VID_HEAP_CONTROL) \
+    X(NV_ESC_RM_ACCESS_REGISTRY) \
+    X(NV_ESC_RM_MAP_MEMORY) \
+    X(NV_ESC_RM_UNMAP_MEMORY) \
+    X(NV_ESC_RM_GET_EVENT_DATA) \
+    X(NV_ESC_RM_ALLOC_CONTEXT_DMA2) \
+    X(NV_ESC_RM_MAP_MEMORY_DMA) \
+    X(NV_ESC_RM_UNMAP_MEMORY_DMA) \
+    X(NV_ESC_RM_BIND_CONTEXT_DMA) \
+    X(NV_ESC_RM_ADD_VBLANK_CALLBACK) \
+    X(NV_ESC_RM_EXPORT_OBJECT_TO_FD) \
+    X(NV_ESC_RM_IMPORT_OBJECT_FROM_FD) \
+    X(NV_ESC_RM_UPDATE_DEVICE_MAPPING_INFO) \
+    X(NV_ESC_RM_LOCKLESS_DIAGNOSTIC) \
+    X(NV_ESC_CARD_INFO) \
+    X(NV_ESC_REGISTER_FD) \
+    X(NV_ESC_ALLOC_OS_EVENT) \
+    X(NV_ESC_FREE_OS_EVENT) \
+    X(NV_ESC_STATUS_CODE) \
+    X(NV_ESC_CHECK_VERSION_STR) \
+    X(NV_ESC_IOCTL_XFER_CMD) \
+    X(NV_ESC_ATTACH_GPUS_TO_FD) \
+    X(NV_ESC_QUERY_DEVICE_INTR) \
+    X(NV_ESC_SYS_PARAMS) \
+    X(NV_ESC_NUMA_INFO) \
+    X(NV_ESC_SET_NUMA_STATUS) \
+    X(NV_ESC_EXPORT_TO_DMABUF_FD) \
+
+
+#define ID(x) x(EXPAND, DISCARD)
+
+#define DEFINE_PARAM_STRUCT(name) \
+    struct PARAMS_##name { name(DISCARD, DEF_FIELD) };
+
+FOR_EACH_IOCTL(DEFINE_PARAM_STRUCT)
+

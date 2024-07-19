@@ -1,0 +1,193 @@
+#define USEC(ns) ((ns) / (uint64)1000)
+#define MSEC(ns) ((ns) / (uint64)1000000)
+#define SEC(ns)  ((ns) / (uint64)1000000000)
+
+#define DECL_TIMESTAMPS()                                 \
+    $now = (uint64)nsecs(monotonic);                      \
+    $ts_sec = SEC($now);                                  \
+    $ts_usec = USEC($now % 1000000000);                   \
+    $elapsed_nsec = $now - @entrytime[tid];
+
+
+#define PRINT(text, num) \
+    printf("%s[%d.%d][%s:%d] %s (0x%x) %lldus%s\n", \
+        USEC($elapsed_nsec) > WARNTIME ? COLOR_BOLD : "", \
+        $ts_sec, $ts_usec, comm, pid, text, num, USEC($elapsed_nsec), \
+        USEC($elapsed_nsec) > WARNTIME ? COLOR_RESET : ""); \
+
+
+#define INIT_ENTRY_ARGS(ctrl, ptr)                      \
+    $ctl = ctrl;                                        \
+    if (FILTER) {                                       \
+        @entryctl[tid] = $ctl;                          \
+        @entryptr[tid] = uptr(ptr);                     \
+        @entrytime[tid] = (uint64)nsecs(monotonic);     \
+    }
+
+#define CLEAR_ENTRY_ARGS()  \
+    delete(@entryctl[tid]); \
+    delete(@entryptr[tid]); \
+    delete(@entrytime[tid]); \
+
+
+
+#define PRINT_RPC_HISTORY() \
+  if (1) { \
+    $i = (uint32)0; \
+    while ($i < RPC_HISTORY_DEPTH) { \
+        $idx = (@pRpc->rpcHistoryCurrent + RPC_HISTORY_DEPTH - $i) % RPC_HISTORY_DEPTH; \
+        $rpcHistoryAddr = (uint8*)@pRpc + OFFSET_OBJRPC_rpcHistory; \
+        $entry = (struct RpcHistoryEntry*)($rpcHistoryAddr + $idx * sizeof(struct RpcHistoryEntry)); \
+                                                                                                     \
+        printf("[RPC:%d] func:0x%x data:0x%lx 0x%lx ts_start:%lu ts_end:%lu, duration:%lu\n", \
+            $idx, $entry->function, $entry->data[0], $entry->data[1], $entry->ts_start, $entry->ts_end, $entry->ts_end - $entry->ts_start); \
+        $i++; \
+    } \
+  }
+
+config = {
+//    max_strlen=64;
+    missing_probes = "ignore";
+    perf_rb_pages = 256;
+    log_size = 10000000;
+}
+
+BEGIN {
+    @lastprint_nsec = nsecs;
+
+    // https://github.com/bpftrace/bpftrace/issues/3294
+    #define MAKE_IOCTL_NAME(IOCTLNAME) \
+        @ioctlnames[ID(IOCTLNAME)] = #IOCTLNAME;
+    FOR_EACH_IOCTL(MAKE_IOCTL_NAME)
+
+    // Init to define the map key/value types
+    @ioctls[0,0] = ((uint64)0, (uint64)0, (uint64)0);
+
+    // Only single-GPU supported for now...
+    $pSys = kptr(*(struct OBJSYS**)kptr(ADDR_PSYS));
+    @pGpu = $pSys->pGpuMgr->gpuHandleIDList[0].pGpu;
+    @pRpc = @pGpu->pKernelGsp->pRpc;
+
+    PRINT_RPC_HISTORY()    
+}
+
+kprobe:nvidia_unlocked_ioctl {
+    INIT_ENTRY_ARGS(arg1 & 0xff, arg2)
+}
+
+kretprobe:nvidia_unlocked_ioctl / @entrytime[tid] / {
+    DECL_TIMESTAMPS()
+    $ctl = @entryctl[tid];
+    $ptr = @entryptr[tid];
+
+    $sub = 0;
+    if ($ctl == ID(NV_ESC_RM_CONTROL)) {
+        $sub = ((struct PARAMS_NV_ESC_RM_CONTROL *)$ptr)->cmd;
+    } else if ($ctl == ID(NV_ESC_RM_ALLOC)) {
+        $sub = ((struct PARAMS_NV_ESC_RM_ALLOC *)$ptr)->hClass;
+    }
+
+    $unknown = 1;
+
+    $x = @ioctls[$ctl, $sub];
+    $count = $x.0 + 1;
+    $dursum = $elapsed_nsec + $x.1;
+    $durmax = ($x.2 > $elapsed_nsec) ? $x.2 : $elapsed_nsec;
+
+    @ioctls[$ctl, $sub] = ($count, $dursum, $durmax);
+
+    if (USEC($elapsed_nsec) >= MINTIME) {
+        #define HANDLE_IOCTL(IOCTLNAME)             \
+            if ($ctl == ID(IOCTLNAME))              \
+            {                                       \
+                PRINT(#IOCTLNAME, $ctl)             \
+                printf("    %s", COLOR_DIM);        \
+                IOCTLNAME(DISCARD, PRINT_FIELD)     \
+                printf("%s\n", COLOR_RESET);        \
+                $unknown = 0;                       \
+            } else
+        FOR_EACH_IOCTL(HANDLE_IOCTL)
+
+        if ($unknown == 1) {
+            PRINT("UNKNWON", $ctl)
+        }
+    }
+    CLEAR_ENTRY_ARGS()
+}
+
+
+#define SIMPLE_ENTRYPOINT(funcname)             \
+     kprobe:funcname {                          \
+         INIT_ENTRY_ARGS(0, 0)                  \
+     }                                          \
+     kretprobe:funcname / @entrytime[tid] / {   \
+         DECL_TIMESTAMPS()                      \
+         PRINT(#funcname, 0)                    \
+         CLEAR_ENTRY_ARGS()                     \
+     }
+
+SIMPLE_ENTRYPOINT(nvidia_mmap)
+SIMPLE_ENTRYPOINT(nvidia_open)
+SIMPLE_ENTRYPOINT(nvidia_close)
+//SIMPLE_ENTRYPOINT(nvidia_poll) // way too spammy
+
+// Only fire on ALT key down
+#define L_ALT 56
+#define R_ALT 100
+kprobe:input_event / arg1==1 && (arg2==L_ALT || arg2==R_ALT) && arg3 == 1 / {
+    $now = nsecs;
+    if (MSEC($now - @last_alt_keydown) < 200) {
+        printf("%s!!! POINT OF INTEREST !!!%s\n", COLOR_BOLD, COLOR_RESET);         
+        PRINT_RPC_HISTORY()
+    }
+    @last_alt_keydown = $now;
+}
+
+
+END {
+    $end_start = nsecs;
+    printf("Stopped tracing..\n");
+    printf("%30s | %10s | %5s | %10s | %8s |\n",
+        "ioctl", "cmd", "count", "total exec", "max exec");
+    printf("-------------------------------|------------|-------|------------|----------|\n");
+
+    @last_max_val = (uint64)0xffffffffffffffff;
+    for ($tmp : @ioctls) {
+        @max_val = (uint64)0;
+        for ($kv : @ioctls) {
+            if (($kv.1.1 > @max_val) && ($kv.1.1 < @last_max_val) && ($kv.0 != @max_key)) {
+                @max_val = $kv.1.1;
+                @max_key = $kv.0;
+            }
+        }
+        if ((@max_key.0 != @last_max_key.0) || (@max_key.1 != @last_max_key.1)) {
+            $ctl = @max_key.0;
+            $sub = @max_key.1;
+
+            $count = @ioctls[$ctl, $sub].0;
+            $dursum = @ioctls[$ctl, $sub].1;
+            $durmax = @ioctls[$ctl, $sub].2;
+
+            printf("%30s | 0x%08x | %5lld | %10lld | %8lld |\n",
+                @ioctlnames[$ctl], $sub, $count, USEC($dursum), USEC($durmax));
+            @last_max_val = @max_val;
+            @last_max_key = @max_key;
+        }
+    }
+    printf("-------------------------------|------------|-------|------------|----------|\n");
+    printf("Report finished in %llu us\n", USEC(nsecs - $end_start));
+
+    clear(@ioctls);
+
+    clear(@entryctl);
+    clear(@entryptr);
+    clear(@entrytime);
+    clear(@ioctlnames);
+    delete(@lastprint_nsec);
+    delete(@last_max_val);
+    delete(@last_max_key);
+    delete(@max_key);
+    delete(@max_val);
+    PRINT_RPC_HISTORY()    
+}
+
