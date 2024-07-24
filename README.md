@@ -43,3 +43,14 @@ Supported driver versions:
 # bpftrace
 
 The core of `nvtrace.sh` is the wonderful https://github.com/bpftrace/bpftrace tool. Because this tool is under active development, and most distros ship an outdated version, `nvtrace.sh` will download a recent known good version instead and run it out of pwd.
+
+# TODOs
+
+- More info around GSP RPCs (attach comm:pid, human readable enums)
+- Handle multi-GPU (currently only single GPU systems work reliably)
+- Improve script robustness and portability
+- Don't download bpftrace when not necessary
+- Make it work on closed source driver too
+- Add RmMsg calls to enable more verbose prints from nvidia.ko
+- Log nvidia_drm.ko and nvidia_modeset.ko calls
+- Configurable options (customizable keybind for ALT)
