@@ -32,7 +32,7 @@ if [ "$nvidia_license" != " Dual MIT/GPL" ]; then
 fi
 
 echo "Running nvidia-bug-report.sh, this may take a minute..."
-#sudo nvidia-bug-report.sh --output-file $outdir/nvidia-bug-report-start.log > /dev/null
+sudo nvidia-bug-report.sh --output-file $outdir/nvidia-bug-report-start.log > /dev/null
 
 # Fetch a recent bpftrace binary since most distros ship very old versions.
 # TODO: Check installed version if any and skip this step...
@@ -86,6 +86,7 @@ case "$nvidia_version" in
         exit 1
         ;;
 esac
+
 
 gpsys=$(sudo grep g_pSys /proc/kallsyms | awk '{print $1}' | xargs printf "0x%s")
 ctrl_c() {
