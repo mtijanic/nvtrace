@@ -2,8 +2,28 @@
 
 A performance and stutter analysis tool for NVIDIA Open GPU Kernel modules
 
+# How to use
 
-To produce the runnable nvtrace.sh, run:
+Simply download and run `nvtrace.sh` (requires root permissions).
+
+If you notice stutter or performance issues, double-tap the ALT key to insert a "point of interest" where we should investigate more. This will also dump more relevant info around that point.
+
+To stop tracing, press CTRL+C. This will then package up all the log files and put then in the pwd. You can then send this `nvtrace-xxx.tar.gz` file to NVIDIA.
+
+# Private info
+
+`nvtrace.sh` uses `nvidia-bug-report.sh` to capture system state, and it may include some private info. The disclaimer from `nvidia-bug-report.sh` applies:
+
+    By delivering 'nvidia-bug-report.log.gz' to NVIDIA, you acknowledge
+    and agree that personal information may inadvertently be included in
+    the output.  Notwithstanding the foregoing, NVIDIA will use the
+    output only for the purpose of investigating your reported issue.
+
+# Modifying nvtrace
+
+The script consists of a bunch of smaller fragments found in `src/`. 
+
+To produce the full runnable nvtrace.sh, run:
 
 ```
 cat src/nvt_* > nvtrace.sh
@@ -18,3 +38,8 @@ Supported driver versions:
 - 555.42.02
 - 555.58.02
 - 560.28.03
+
+
+# bpftrace
+
+The core of `nvtrace.sh` is the wonderful https://github.com/bpftrace/bpftrace tool. Because this tool is under active development, and most distros ship an outdated version, `nvtrace.sh` will download a recent known good version instead and run it out of pwd.
