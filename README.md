@@ -13,4 +13,8 @@ cat nvt_* > nvtrace.sh
 
 The tool currently only supports Open GPU Kernel Modules (nvidia-open) drivers.
 
-Currently only version 555.42.02 is supported, but other versions are imminent.
+Supported driver versions:
+
+- 555.42.02
+- 555.58.02
+- 560.28.03
