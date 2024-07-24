@@ -2,6 +2,10 @@
 
 A performance and stutter analysis tool for NVIDIA Open GPU Kernel modules
 
+***This is NOT an official NVIDIA tool***. Please treat it as if it was written by Some Guy On The Internet. Do not expect any official NVIDIA support whatsoever.
+
+However, the _output_ of the tool can be sent to NVIDIA (via `linux-bugs@nvidia.com` or to `mtijanic@nvidia.com` directly, or attached to the appropriate github issue / forum thread) to provide additional useful context when reporting issues.
+
 # How to use
 
 Simply download and run `nvtrace.sh` (requires root permissions).
