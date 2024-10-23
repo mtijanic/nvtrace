@@ -42,6 +42,7 @@ Supported driver versions:
 - 555.42.02
 - 555.58.02
 - 560.28.03
+- 565.57.01
 
 
 # bpftrace
