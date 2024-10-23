@@ -29,6 +29,14 @@ case "$nvidia_version" in
 -DOFFSET_KernelGsp_pRpc=2920 \
 -DOFFSET_OBJRPC_rpcHistory=1184"
         ;;
+    "565.57.01")
+        offsets=" \
+-DOFFSET_OBJSYS_pGpuMgr=488 \
+-DOFFSET_OBJGPUMGR_gpuHandleIDList=257360 \
+-DOFFSET_OBJGPU_pKernelGsp=6168 \
+-DOFFSET_KernelGsp_pRpc=2344 \
+-DOFFSET_OBJRPC_rpcHistory=1192"
+        ;;
     *)
         echo "ERROR: Unknown NVIDIA driver version $nvidia_version"
         exit 1
