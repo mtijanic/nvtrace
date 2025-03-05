@@ -4,6 +4,41 @@
 #define RPC_HISTORY_DEPTH 8
 #endif
 
+#if IS_VERSION(555,42,02)
+#define OFFSET_OBJSYS_pGpuMgr 496
+#define OFFSET_OBJGPUMGR_gpuHandleIDList 255568
+#define OFFSET_OBJGPU_pKernelGsp 5816
+#define OFFSET_KernelGsp_pRpc 2920
+#define OFFSET_OBJRPC_rpcHistory 1168
+#elif IS_VERSION(555,58,02)
+#define OFFSET_OBJSYS_pGpuMgr 496
+#define OFFSET_OBJGPUMGR_gpuHandleIDList 255568
+#define OFFSET_OBJGPU_pKernelGsp 5816
+#define OFFSET_KernelGsp_pRpc 2920
+#define OFFSET_OBJRPC_rpcHistory 1168
+#elif IS_VERSION(560,28,03)
+#define OFFSET_OBJSYS_pGpuMgr 488
+#define OFFSET_OBJGPUMGR_gpuHandleIDList 255568
+#define OFFSET_OBJGPU_pKernelGsp 6024
+#define OFFSET_KernelGsp_pRpc 2920
+#define OFFSET_OBJRPC_rpcHistory 1184
+#elif IS_VERSION(565,57,01)
+#define OFFSET_OBJSYS_pGpuMgr 488
+#define OFFSET_OBJGPUMGR_gpuHandleIDList 257360
+#define OFFSET_OBJGPU_pKernelGsp 6168
+#define OFFSET_KernelGsp_pRpc 2344
+#define OFFSET_OBJRPC_rpcHistory 1192
+#elif IS_VERSION(570,124,04) || IS_VERSION(570,124,06)
+#define OFFSET_OBJSYS_pGpuMgr 480
+#define OFFSET_OBJGPUMGR_gpuHandleIDList 257360
+#define OFFSET_OBJGPU_pKernelGsp 6216
+#define OFFSET_KernelGsp_pRpc 2368
+#define OFFSET_OBJRPC_rpcHistory 1272
+#else
+#error "Unknown driver version"
+#endif
+
+
 // Minimal structure definitions to get the RPC history
 struct OBJSYS {
     char pad[OFFSET_OBJSYS_pGpuMgr];
