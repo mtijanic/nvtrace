@@ -31,8 +31,19 @@ if [ "$nvidia_license" != " Dual MIT/GPL" ]; then
     exit 1
 fi
 
-echo "Running nvidia-bug-report.sh, this may take a minute..."
-sudo nvidia-bug-report.sh --output-file $outdir/nvidia-bug-report-start.log > /dev/null
+trace_only=
+for arg in "$@"; do
+    if [ "$arg" = "--trace-only" ]; then
+        trace_only=1
+        echo "Running in trace-only mode"
+        shift
+        break
+    fi
+done
+if [ -z "$trace_only" ]; then
+    echo "Running nvidia-bug-report.sh, this may take a minute..."
+    sudo nvidia-bug-report.sh --output-file $outdir/nvidia-bug-report-start.log > /dev/null
+fi
 
 # Fetch a recent bpftrace binary since most distros ship very old versions.
 # TODO: Check installed version if any and skip this step...
@@ -126,33 +137,39 @@ grep --after-context=9999999 'BEGIN[_]BPFTRACE[_]SCRIPT' $0 | cpp -P $CPPFLAGS $
 # Display output to user too
 tail -f $outdir/bpftrace.log
 sleep 2
-echo ""
-echo "Will collect trace end system state"
-echo "Running nvidia-bug-report.sh, this may take a minute..."
-echo ""
-sudo nvidia-bug-report.sh --output-file $outdir/nvidia-bug-report-end.log > /dev/null
+if [ -z "$trace_only" ]; then
+    echo ""
+    echo "Will collect trace end system state"
+    echo "Running nvidia-bug-report.sh, this may take a minute..."
+    echo ""
+    sudo nvidia-bug-report.sh --output-file $outdir/nvidia-bug-report-end.log > /dev/null
+fi
 # Tar up everything in outdir and copy to pwd
 
-tarname=nvtrace-$(date +%Y%m%d%H%M%S).tar.gz
+if [ -z "$trace_only" ]; then
+    tarname=nvtrace-$(date +%Y%m%d%H%M%S).tar.gz
 
-#tar -czf $tarname $outdir/*
-oldpwd=$(pwd)
-cd $outdir
-tar -czf $oldpwd/$tarname *
-cd $oldpwd
+    #tar -czf $tarname $outdir/*
+    oldpwd=$(pwd)
+    cd $outdir
+    tar -czf $oldpwd/$tarname *
+    cd $oldpwd
 
 
-echo ""
-echo "Saved trace output to $tarname"
-echo "Please send this file to mtijanic@nvidia.com for analysis."
-echo ""
+    echo ""
+    echo "Saved trace output to $tarname"
+    echo "Please send this file to mtijanic@nvidia.com for analysis."
+    echo ""
+fi
 
-echo ""
-echo "By delivering this file to NVIDIA, you acknowledge"
-echo "and agree that personal information may inadvertently be included in"
-echo "the output.  Notwithstanding the foregoing, NVIDIA will use the"
-echo "output only for the purpose of investigating your reported issue."
-echo ""
+if [ -z "$trace_only" ]; then
+    echo ""
+    echo "By delivering this file to NVIDIA, you acknowledge"
+    echo "and agree that personal information may inadvertently be included in"
+    echo "the output.  Notwithstanding the foregoing, NVIDIA will use the"
+    echo "output only for the purpose of investigating your reported issue."
+    echo ""
+fi
 if [ ! -z "$outdir" ]; then
     echo "Cleaning up $outdir"
     echo ""
