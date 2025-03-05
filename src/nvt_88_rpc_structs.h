@@ -1,3 +1,9 @@
+#if IS_VERSION_OR_ABOVE(555,58,02)
+#define RPC_HISTORY_DEPTH 128
+#else
+#define RPC_HISTORY_DEPTH 8
+#endif
+
 // Minimal structure definitions to get the RPC history
 struct OBJSYS {
     char pad[OFFSET_OBJSYS_pGpuMgr];

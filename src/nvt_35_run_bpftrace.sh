@@ -1,6 +1,7 @@
 # Preprocess and then run the bpftrace script..
 
-CPPFLAGS="$offsets -DADDR_PSYS=$gpsys -DRPC_HISTORY_DEPTH=$rpc_history_depth"
+CPPFLAGS="$offsets -DADDR_PSYS=$gpsys \
+-DVER_MAJOR=$ver_major -DVER_MINOR=$ver_minor -DVER_PATCH=$ver_patch"
 
 echo "Starting bpftrace.."
 

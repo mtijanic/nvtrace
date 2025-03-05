@@ -1,7 +1,5 @@
 # Get the structure offsets for the current NVIDIA driver version
 
-rpc_history_depth=128
-
 case "$nvidia_version" in
     "555.42.02")
         offsets=" \
@@ -10,8 +8,6 @@ case "$nvidia_version" in
 -DOFFSET_OBJGPU_pKernelGsp=5816 \
 -DOFFSET_KernelGsp_pRpc=2920 \
 -DOFFSET_OBJRPC_rpcHistory=1168"
-        # This was extended to 128 later in r555
-        rpc_history_depth=8
         ;;
     "555.58.02")
         offsets=" \

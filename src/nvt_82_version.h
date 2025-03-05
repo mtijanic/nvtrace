@@ -1,0 +1,3 @@
+#define DRIVER_VERSION (VER_MAJOR * 100000 + VER_MINOR * 100 + VER_PATCH)
+#define IS_VERSION(x,y,z) (DRIVER_VERSION == (x * 100000 + y * 100 + z))
+#define IS_VERSION_OR_ABOVE(x,y,z) (DRIVER_VERSION >= (x * 100000 + y * 100 + z))

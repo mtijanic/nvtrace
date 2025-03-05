@@ -24,6 +24,10 @@ if [ -z "$nvidia_version" ]; then
     exit 1
 fi
 
+ver_major=$(echo $nvidia_version | cut -d. -f1)
+ver_minor=$(echo $nvidia_version | cut -d. -f2)
+ver_patch=$(echo $nvidia_version | cut -d. -f3)
+
 # TODO: Only supported on OpenRM for now. Need to divine the offsets for the proprietary driver.
 nvidia_license=$(modinfo nvidia | grep license | awk '{$1=""; print}')
 if [ "$nvidia_license" != " Dual MIT/GPL" ]; then
@@ -63,8 +67,6 @@ fi
 
 # Get the structure offsets for the current NVIDIA driver version
 
-rpc_history_depth=128
-
 case "$nvidia_version" in
     "555.42.02")
         offsets=" \
@@ -73,8 +75,6 @@ case "$nvidia_version" in
 -DOFFSET_OBJGPU_pKernelGsp=5816 \
 -DOFFSET_KernelGsp_pRpc=2920 \
 -DOFFSET_OBJRPC_rpcHistory=1168"
-        # This was extended to 128 later in r555
-        rpc_history_depth=8
         ;;
     "555.58.02")
         offsets=" \
@@ -127,7 +127,8 @@ trap ctrl_c INT
 
 # Preprocess and then run the bpftrace script..
 
-CPPFLAGS="$offsets -DADDR_PSYS=$gpsys -DRPC_HISTORY_DEPTH=$rpc_history_depth"
+CPPFLAGS="$offsets -DADDR_PSYS=$gpsys \
+-DVER_MAJOR=$ver_major -DVER_MINOR=$ver_minor -DVER_PATCH=$ver_patch"
 
 echo "Starting bpftrace.."
 
@@ -206,6 +207,9 @@ exit
 #define COLOR_DIM "\033[2m"
 #define COLOR_BOLD "\033[1;31m"
 #define COLOR_RESET "\033[0m"
+#define DRIVER_VERSION (VER_MAJOR * 100000 + VER_MINOR * 100 + VER_PATCH)
+#define IS_VERSION(x,y,z) (DRIVER_VERSION == (x * 100000 + y * 100 + z))
+#define IS_VERSION_OR_ABOVE(x,y,z) (DRIVER_VERSION >= (x * 100000 + y * 100 + z))
 
 #define DEF_FIELD_16(esc, x) unsigned short x;
 #define DEF_FIELD_32(esc, x) unsigned int x;
@@ -493,6 +497,12 @@ exit
     struct PARAMS_##name { name(DISCARD, DEF_FIELD) };
 
 FOR_EACH_IOCTL(DEFINE_PARAM_STRUCT)
+
+#if IS_VERSION_OR_ABOVE(555,58,02)
+#define RPC_HISTORY_DEPTH 128
+#else
+#define RPC_HISTORY_DEPTH 8
+#endif
 
 // Minimal structure definitions to get the RPC history
 struct OBJSYS {
