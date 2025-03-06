@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "nvtrace performance and stutter diagnostics tool, version 0.1"
+echo "nvtrace performance and stutter diagnostics tool, version 0.2"
 echo ""
 echo "Leave the tool running in the background to collect traces"
 echo "If you notice stutter or performance issues, double-tap the ALT key."
