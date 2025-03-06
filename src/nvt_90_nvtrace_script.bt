@@ -69,6 +69,8 @@ BEGIN {
     @pRpc = @pGpu->pKernelGsp->pRpc;
 
     PRINT_RPC_HISTORY()    
+
+    @rusd = @pGpu->userSharedData.pMapBuffer;
 }
 
 kprobe:nvidia_unlocked_ioctl {
@@ -143,6 +145,35 @@ kprobe:input_event / arg1==1 && (arg2==L_ALT || arg2==R_ALT) && arg3 == 1 / {
     @last_alt_keydown = $now;
 }
 
+#if HAVE_RUSD
+#define PRINT_RUSD_VAL_IF_CHANGED_BASE(grp, field, fmt) \
+    if (@rusd->grp.lastModifiedTimestamp != 0) { \
+        if (!@rusd_last_val[#field]) { \
+            @rusd_last_val[#field] = (uint64)0; \
+        } \
+        $curr = (uint64)@rusd->grp.field; \
+        $last = (uint64)@rusd_last_val[#field]; \
+        if ($last != $curr) { \
+            printf(fmt, #grp, #field, $last, $curr); \
+            @rusd_last_val[#field] = $curr; \
+        } \
+    }
+
+#define PRINT_RUSD_VAL_IF_CHANGED_DEC(grp, field) \
+    PRINT_RUSD_VAL_IF_CHANGED_BASE(grp, field, "[RUSD] %s.%s change: %llu -> %llu\n")
+
+#define PRINT_RUSD_VAL_IF_CHANGED_HEX(grp, field) \
+    PRINT_RUSD_VAL_IF_CHANGED_BASE(grp, field, "[RUSD] %s.%s change: 0x%llx -> 0x%llx\n")
+
+interval:ms:500 {
+    PRINT_RUSD_VAL_IF_CHANGED_HEX(perfCurrentPstate, currentPstate)
+    PRINT_RUSD_VAL_IF_CHANGED_HEX(clkThrottleReason, reasonMask)
+
+    PRINT_RUSD_VAL_IF_CHANGED_DEC(bar1MemoryInfo, bar1AvailSize)
+    PRINT_RUSD_VAL_IF_CHANGED_DEC(perfDevUtil, info.gpuPercentBusy)
+    PRINT_RUSD_VAL_IF_CHANGED_DEC(perfDevUtil, info.memoryPercentBusy)
+}
+#endif // HAVE_RUSD
 
 END {
     $end_start = nsecs;

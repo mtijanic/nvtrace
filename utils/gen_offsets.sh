@@ -85,6 +85,7 @@ cc $CPPFLAGS $CFLAGS -x c - > /dev/null << \EOF
 PRINT_OFFSETOF(OFFSET_OBJSYS_pGpuMgr, OBJSYS, pGpuMgr)
 PRINT_OFFSETOF(OFFSET_OBJGPUMGR_gpuHandleIDList, OBJGPUMGR, gpuHandleIDList)
 PRINT_OFFSETOF(OFFSET_OBJGPU_pKernelGsp, OBJGPU, children.named.pKernelGsp)
+PRINT_OFFSETOF(OFFSET_OBJGPU_userSharedData, OBJGPU, userSharedData)
 PRINT_OFFSETOF(OFFSET_KernelGsp_pRpc, KernelGsp, pRpc)
 PRINT_OFFSETOF(OFFSET_OBJRPC_rpcHistory, OBJRPC, rpcHistory)
 
