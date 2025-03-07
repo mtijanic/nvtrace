@@ -57,6 +57,6 @@ The core of `nvtrace.sh` is the wonderful https://github.com/bpftrace/bpftrace t
 - Improve script robustness and portability
 - Don't download bpftrace when not necessary
 - Make it work on closed source driver too
-- Add RmMsg calls to enable more verbose prints from nvidia.ko
+- ~~Add RmMsg calls to enable more verbose prints from nvidia.ko~~
 - Log nvidia_drm.ko and nvidia_modeset.ko calls
 - Configurable options (customizable keybind for ALT)
